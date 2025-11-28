@@ -37,6 +37,8 @@ public class CalculateSales {
 		}
 
 		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
+		//全てのファイルを取得する
+
 
 
 
@@ -68,6 +70,11 @@ public class CalculateSales {
 			// 一行ずつ読み込む
 			while((line = br.readLine()) != null) {
 				// ※ここの読み込み処理を変更してください。(処理内容1-2)
+				//支店コードと支店名を保持する
+				String[] items = line.split(",");
+				 branchNames.put(items[0], items[1]);
+				 branchSales.put(items[0], 0L);
+
 				System.out.println(line);
 			}
 
