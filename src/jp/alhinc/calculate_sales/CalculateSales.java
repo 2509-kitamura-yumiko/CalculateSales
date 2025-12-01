@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CalculateSales {
@@ -37,7 +39,48 @@ public class CalculateSales {
 		}
 
 		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
-		//全てのファイルを取得する
+		//全てのファイルを取得し、配列filesに格納
+		String path = args[0];
+		File[] files = new File(path).listFiles();
+
+		//filesに存在するすべてのファイルから、
+		//ファイル名が数字8桁で、拡張子が rcdのものを抽出してrcdFilesに格納
+		List<File> rcdFiles = new ArrayList<>();
+
+		for(int i = 0; i < files.length ; i++) {
+			if(files[i].getName().matches("^[0-9]{8}.rcd$")) {
+				rcdFiles.add(files[i]);
+			}
+		}
+
+
+		//rcdFilesの中身を読み込み
+		List<String> fileSale = new ArrayList<>();
+		readFile(File file, List<String> fileSale) {
+			BufferedReader br = null;
+
+			try {
+				FileReader fr = new FileReader(file);
+				br = new BufferedReader(fr);
+
+				String line;
+				while((line = br.readLine()) != null) {
+				fileSale.add(line);
+				}
+			} catch(IOException e) {
+				System.out.println(UNKNOWN_ERROR);
+			} finally {
+				// ファイルを開いている場合
+				if(br != null) {
+					try {
+						// ファイルを閉じる
+						br.close();
+					} catch(IOException e) {
+						System.out.println(UNKNOWN_ERROR);
+					}
+				}
+			}
+		}
 
 
 
