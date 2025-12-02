@@ -42,38 +42,46 @@ public class CalculateSales {
 
 		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
 		//全てのファイルを取得し、配列filesに格納
-		String path = args[0];
-		File[] files = new File(path).listFiles();
+		File[] files = new File(args[0]).listFiles();
 
 		//filesに存在するすべてのファイルから、
 		//ファイル名が数字8桁で、拡張子が rcdのものを抽出してrcdFilesに格納
 		List<File> rcdFiles = new ArrayList<>();
 
-		for(int i = 0; i < files.length ; i++) {
+		for(int i = 0; i < files.length; i++) {
 			if(files[i].getName().matches("^[0-9]{8}.rcd$")) {
 				rcdFiles.add(files[i]);
 			}
 		}
 
 
-		//rcdFilesの中身を読み込むリストfileSaleを作成
-		List<String> fileSales = new ArrayList<>();
 		//rcdFilesを要素数の数だけ繰り返す
-		for(int i = 0; i < rcdFiles.size() ; i++) {
+		for(int i = 0; i < rcdFiles.size(); i++) {
 
-			File f = rcdFiles.get(i);
+			//rcdFilesの中身を読み込むリストfileSaleを作成
+			List<String> fileSales = new ArrayList<>();
+
 			BufferedReader br = null;
 
 			try {
-				br = new BufferedReader(new FileReader(f));
+				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
 				String line;
 
-				while((line = br.readLine()) != null) {
-				fileSales.add(line);
-				}
+					while((line = br.readLine()) != null) {
+					fileSales.add(line);
+					}
+
+					long fileSale = Long.parseLong(fileSales.get(1));
+					for (String key : branchSales.keySet()) {
+						if (key.equals(fileSales.get(0))) {
+						long saleAmount = branchSales.get(key) + fileSale;
+						branchSales.put(key, saleAmount);
+						}
+					}
 
 			} catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
+				return;
 			} finally {
 				// ファイルを開いている場合
 				if(br != null) {
@@ -82,27 +90,19 @@ public class CalculateSales {
 						br.close();
 					} catch(IOException e) {
 						System.out.println(UNKNOWN_ERROR);
+						return;
 					}
 				}
 			}
 		}
-		for(int i = 1; i < fileSales.size(); i += 2) {
-			String branchCode = fileSales.get(i - 1);
-			long filesale = Long.parseLong(fileSales.get(i));
-			long total = branchSales.get(branchCode) + filesale;
-			branchSales.put(branchCode, total);
-		}
-
-
-
 
 
 		// 支店別集計ファイル書き込み処理
 		if(!writeFile(args[0], FILE_NAME_BRANCH_OUT, branchNames, branchSales)) {
 			return;
 		}
-
 	}
+
 
 	/**
 	 * 支店定義ファイル読み込み処理
@@ -129,8 +129,6 @@ public class CalculateSales {
 				String[] items = line.split(",");
 				 branchNames.put(items[0], items[1]);
 				 branchSales.put(items[0], 0L);
-
-				System.out.println(line);
 			}
 
 		} catch(IOException e) {
@@ -151,6 +149,7 @@ public class CalculateSales {
 		return true;
 	}
 
+
 	/**
 	 * 支店別集計ファイル書き込み処理
 	 *
@@ -166,8 +165,8 @@ public class CalculateSales {
 		BufferedWriter bw = null;
 
 		try {
-			File f = new File(path, "branch.out");
-			bw = new BufferedWriter(new FileWriter(f));
+			File writefile = new File(path, fileName);
+			bw = new BufferedWriter(new FileWriter(writefile));
 
 			for (String key : branchNames.keySet()) {
 				bw.write(key + "," + branchNames.get(key) + "," + branchSales.get(key));
@@ -178,20 +177,17 @@ public class CalculateSales {
 				System.out.println(UNKNOWN_ERROR);
 				return false;
 		} finally {
-				// ファイルを開いている場合
-				if(bw != null) {
-					try {
-						// ファイルを閉じる
-						bw.close();
-					} catch(IOException e) {
-						System.out.println(UNKNOWN_ERROR);
-						return false;
-					}
+			// ファイルを開いている場合
+			if(bw != null) {
+				try {
+					// ファイルを閉じる
+					bw.close();
+				} catch(IOException e) {
+					System.out.println(UNKNOWN_ERROR);
+					return false;
 				}
 			}
-
-
-
+		}
 		return true;
 	}
 
