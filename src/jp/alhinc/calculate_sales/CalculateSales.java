@@ -1,8 +1,10 @@
 package jp.alhinc.calculate_sales;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,19 +56,22 @@ public class CalculateSales {
 		}
 
 
-		//rcdFilesの中身を読み込み
-		List<String> fileSale = new ArrayList<>();
-		readFile(File file, List<String> fileSale) {
+		//rcdFilesの中身を読み込むリストfileSaleを作成
+		List<String> fileSales = new ArrayList<>();
+		//rcdFilesを要素数の数だけ繰り返す
+		for(int i = 0; i < rcdFiles.size() ; i++) {
+
+			File f = rcdFiles.get(i);
 			BufferedReader br = null;
 
 			try {
-				FileReader fr = new FileReader(file);
-				br = new BufferedReader(fr);
-
+				br = new BufferedReader(new FileReader(f));
 				String line;
+
 				while((line = br.readLine()) != null) {
-				fileSale.add(line);
+				fileSales.add(line);
 				}
+
 			} catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
 			} finally {
@@ -81,6 +86,13 @@ public class CalculateSales {
 				}
 			}
 		}
+		for(int i = 1; i < fileSales.size(); i += 2) {
+			String branchCode = fileSales.get(i - 1);
+			long filesale = Long.parseLong(fileSales.get(i));
+			long total = branchSales.get(branchCode) + filesale;
+			branchSales.put(branchCode, total);
+		}
+
 
 
 
@@ -122,7 +134,7 @@ public class CalculateSales {
 			}
 
 		} catch(IOException e) {
-			System.out.println(UNKNOWN_ERROR);
+			System.out.println(FILE_NOT_EXIST);
 			return false;
 		} finally {
 			// ファイルを開いている場合
@@ -150,6 +162,35 @@ public class CalculateSales {
 	 */
 	private static boolean writeFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
 		// ※ここに書き込み処理を作成してください。(処理内容3-1)
+
+		BufferedWriter bw = null;
+
+		try {
+			File f = new File(path, "branch.out");
+			bw = new BufferedWriter(new FileWriter(f));
+
+			for (String key : branchNames.keySet()) {
+				bw.write(key + "," + branchNames.get(key) + "," + branchSales.get(key));
+				bw.newLine();
+			}
+
+		} catch(IOException e) {
+				System.out.println(UNKNOWN_ERROR);
+				return false;
+		} finally {
+				// ファイルを開いている場合
+				if(bw != null) {
+					try {
+						// ファイルを閉じる
+						bw.close();
+					} catch(IOException e) {
+						System.out.println(UNKNOWN_ERROR);
+						return false;
+					}
+				}
+			}
+
+
 
 		return true;
 	}
