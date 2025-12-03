@@ -26,6 +26,8 @@ public class CalculateSales {
 	private static final String FILE_INVALID_FORMAT = "支店定義ファイルのフォーマットが不正です";
 	private static final String FILE_NOT_SEQUENTIAL = "売上ファイル名が連番になっていません";
 	private static final String AMOUNT_EXCEEDS_LIMIT = "合計金額が10桁を超えました";
+	private static final String SALES_FILE_INVALID_FORMAT = "のフォーマットが不正です";
+	private static final String BRANCH_CODE_NOT_FOUND = "のフォーマットが不正です";
 
 
 	/**
@@ -58,8 +60,8 @@ public class CalculateSales {
 			}
 		}
 		//売上ファイルが連番かチェック
-		for(int i = 0; i < rcdFiles.size() -1; i++) {
-			Collections.sort(rcdFiles);
+		Collections.sort(rcdFiles);
+		for(int i = 0; i < rcdFiles.size() - 1; i++) {
 			String formerName = rcdFiles.get(i).getName();
 			String latterName = rcdFiles.get(i + 1).getName();
 			int former = Integer.parseInt(formerName.substring(0, 8));
@@ -80,30 +82,29 @@ public class CalculateSales {
 				while((line = br.readLine()) != null) {
 					fileContents.add(line);
 				}
+				//売上ファイルのフォーマットをチェック
+				if(fileContents.size() != 2) {
+					System.out.println(rcdFiles.get(i).getName() + SALES_FILE_INVALID_FORMAT);
+					return;
+				}
+				//Mapに特定のKeyが存在するかチェック
+				if (!branchNames.containsKey(fileContents.get(0))) {
+					System.out.println(rcdFiles.get(i).getName() + BRANCH_CODE_NOT_FOUND);
+					return;
+				}
 				//売上金額が数字なのかチェック
 				if(!fileContents.get(1).matches("^[0-9]*$")) {
 					System.out.println(UNKNOWN_ERROR);
 					return;
 				}
-				//Mapに特定のKeyが存在するかチェック
-				if (!branchNames.containsKey(fileContents.get(0))) {
-					System.out.println("<" + rcdFiles.get(i).getName() + ">" + "の支店コードが不正です");
-					return;
-				}
-				//売上ファイルのフォーマットをチェック
-				if(fileContents.size() != 2) {
-					System.out.println("<" + rcdFiles.get(i).getName() + ">" + "のフォーマットが不正です");
-					return;
-				}
 				long fileSale = Long.parseLong(fileContents.get(1));
 				long saleAmount = branchSales.get(fileContents.get(0)) + fileSale;
-				branchSales.put(fileContents.get(0), saleAmount);
 				//売上金額の合計が10桁を超えていないかチェック
 				if(saleAmount >= 10000000000L){
 					System.out.println(AMOUNT_EXCEEDS_LIMIT);
 					return;
 				}
-
+				branchSales.put(fileContents.get(0), saleAmount);
 			} catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
 				return;
