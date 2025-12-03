@@ -38,7 +38,7 @@ public class CalculateSales {
 		if(!readFile(args[0], FILE_NAME_BRANCH_LST, branchNames, branchSales)) {
 			return;
 		}
-		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
+		//(処理内容2-1、2-2)
 		//全てのファイルを取得し、配列filesに格納
 		File[] files = new File(args[0]).listFiles();
 		//filesに存在するすべてのファイルから、
@@ -52,17 +52,17 @@ public class CalculateSales {
 		//rcdFilesを要素数の数だけ繰り返す
 		for(int i = 0; i < rcdFiles.size(); i++) {
 			//rcdFilesの中身を読み込むリストfileSaleを作成
-			List<String> fileSales = new ArrayList<>();
+			List<String> fileContents = new ArrayList<>();
 			BufferedReader br = null;
 			try {
 				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
 				String line;
 				while((line = br.readLine()) != null) {
-					fileSales.add(line);
+					fileContents.add(line);
 				}
-				long fileSale = Long.parseLong(fileSales.get(1));
-				long saleAmount = branchSales.get(fileSales.get(0)) + fileSale;
-				branchSales.put(fileSales.get(0), saleAmount);
+				long fileSale = Long.parseLong(fileContents.get(1));
+				long saleAmount = branchSales.get(fileContents.get(0)) + fileSale;
+				branchSales.put(fileContents.get(0), saleAmount);
 
 			} catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
@@ -105,7 +105,7 @@ public class CalculateSales {
 			String line;
 			// 一行ずつ読み込む
 			while((line = br.readLine()) != null) {
-				// ※ここの読み込み処理を変更してください。(処理内容1-2)
+				//(処理内容1-2)
 				//支店コードと支店名を保持する
 				String[] items = line.split(",");
 				branchNames.put(items[0], items[1]);
@@ -142,7 +142,7 @@ public class CalculateSales {
 	 * @return 書き込み可否
 	 */
 	private static boolean writeFile(String path, String fileName, Map<String, String> branchNames, Map<String, Long> branchSales) {
-		// ※ここに書き込み処理を作成してください。(処理内容3-1)
+		//(処理内容3-1)
 		BufferedWriter bw = null;
 		try {
 			File writefile = new File(path, fileName);
