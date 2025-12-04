@@ -62,25 +62,11 @@ public class CalculateSales {
 			return;
 		}
 		// 支店定義ファイル読み込み処理
-		if(!readFile(
-			args[0],
-			FILE_NAME_BRANCH_LST,
-			branchNames,
-			branchSales,
-			BRANCH_REGEX,
-			"支店"
-		)) {
+		if(!readFile(args[0], FILE_NAME_BRANCH_LST, branchNames, branchSales, BRANCH_REGEX, "支店")) {
 			return;
 		}
 		// 商品定義ファイル読み込み処理
-		if(!readFile(
-			args[0],
-			FILE_NAME_COMMODITY_LST,
-			commodityNames,
-			commoditySales,
-			COMMODITY_REGEX,
-			"商品"
-		)) {
+		if(!readFile(args[0], FILE_NAME_COMMODITY_LST, commodityNames, commoditySales, COMMODITY_REGEX, "商品")) {
 			return;
 		}
 		//(処理内容2-1、2-2)
@@ -139,7 +125,7 @@ public class CalculateSales {
 				long branchSaleAmount = branchSales.get(fileContents.get(0)) + fileSale;
 				long commoditySaleAmount = commoditySales.get(fileContents.get(1)) + fileSale;
 				//売上金額の合計が10桁を超えていないかチェック
-				if(branchSaleAmount >= 10000000000L && commoditySaleAmount >= 10000000000L){
+				if(branchSaleAmount >= 10000000000L || commoditySaleAmount >= 10000000000L){
 					System.out.println(SALEAMOUNT_EXCEEDS_LIMIT);
 					return;
 				}
@@ -182,14 +168,7 @@ public class CalculateSales {
 	 * @param 商品コードと売上金額を保持するMap
 	 * @return 読み込み可否
 	 */
-	private static boolean readFile(
-		String path,
-		String fileName,
-		Map<String, String> names,
-		Map<String, Long> sales,
-		String regex,
-		String error
-	) {
+	private static boolean readFile(String path, String fileName, Map<String, String> names, Map<String, Long> sales, String regex, String error) {
 		BufferedReader br = null;
 		try {
 			File file = new File(path, fileName);
@@ -246,12 +225,7 @@ public class CalculateSales {
 	 * @param 商品コードと売上金額を保持するMap
 	 * @return 書き込み可否
 	 */
-	private static boolean writeFile(
-		String path,
-		String fileName,
-		Map<String, String> names,
-		Map<String, Long> sales
-	) {
+	private static boolean writeFile(String path, String fileName, Map<String, String> names, Map<String, Long> sales) {
 		//(処理内容3-1)
 		BufferedWriter bw = null;
 		try {
