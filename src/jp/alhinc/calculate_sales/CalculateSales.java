@@ -29,16 +29,13 @@ public class CalculateSales {
 
 	// エラーメッセージ
 	private static final String UNKNOWN_ERROR = "予期せぬエラーが発生しました";
-	private static final String BRANCH_FILE_NOT_EXIST = "支店定義ファイルが存在しません";
-	private static final String COMMODITY_FILE_NOT_EXIST = "商品定義ファイルが存在しません";
-	private static final String BRANCH_FILE_INVALID_FORMAT = "支店定義ファイルのフォーマットが不正です";
-	private static final String COMMODITY_FILE_INVALID_FORMAT = "商品定義ファイルのフォーマットが不正です";
+	private static final String FILE_NOT_EXIST = "定義ファイルが存在しません";
+	private static final String FILE_INVALID_FORMAT = "定義ファイルのフォーマットが不正です";
 	private static final String FILE_NOT_SEQUENTIAL = "売上ファイル名が連番になっていません";
-	private static final String BRANCHSALEAMOUNT_EXCEEDS_LIMIT = "合計金額が10桁を超えました";
-	private static final String COMMODITYSALEAMOUNT_EXCEEDS_LIMIT = "合計金額が10桁を超えました";
+	private static final String SALEAMOUNT_EXCEEDS_LIMIT = "合計金額が10桁を超えました";
 	private static final String SALES_FILE_INVALID_FORMAT = "のフォーマットが不正です";
-	private static final String BRANCH_CODE_NOT_FOUND = "のフォーマットが不正です";
-	private static final String COMMODITY_CODE_NOT_FOUND = "のフォーマットが不正です";
+	private static final String BRANCH_CODE_NOT_FOUND = "の支店コードが不正です";
+	private static final String COMMODITY_CODE_NOT_FOUND = "の商品コードが不正です";
 
 	//支店コードの正規表現
 	private static final String BRANCH_REGEX = "^[0-9]{3}$";
@@ -71,8 +68,7 @@ public class CalculateSales {
 			branchNames,
 			branchSales,
 			BRANCH_REGEX,
-			BRANCH_FILE_NOT_EXIST,
-			BRANCH_FILE_INVALID_FORMAT
+			"支店"
 		)) {
 			return;
 		}
@@ -83,8 +79,7 @@ public class CalculateSales {
 			commodityNames,
 			commoditySales,
 			COMMODITY_REGEX,
-			COMMODITY_FILE_NOT_EXIST,
-			COMMODITY_FILE_INVALID_FORMAT
+			"商品"
 		)) {
 			return;
 		}
@@ -141,19 +136,15 @@ public class CalculateSales {
 					return;
 				}
 				long fileSale = Long.parseLong(fileContents.get(2));
-				long branchsaleAmount = branchSales.get(fileContents.get(0)) + fileSale;
-				long commoditysaleAmount = commoditySales.get(fileContents.get(1)) + fileSale;
+				long branchSaleAmount = branchSales.get(fileContents.get(0)) + fileSale;
+				long commoditySaleAmount = commoditySales.get(fileContents.get(1)) + fileSale;
 				//売上金額の合計が10桁を超えていないかチェック
-				if(branchsaleAmount >= 10000000000L){
-					System.out.println(BRANCHSALEAMOUNT_EXCEEDS_LIMIT);
+				if(branchSaleAmount >= 10000000000L && commoditySaleAmount >= 10000000000L){
+					System.out.println(SALEAMOUNT_EXCEEDS_LIMIT);
 					return;
 				}
-				if(commoditysaleAmount >= 10000000000L){
-					System.out.println(COMMODITYSALEAMOUNT_EXCEEDS_LIMIT);
-					return;
-				}
-				branchSales.put(fileContents.get(0), branchsaleAmount);
-				commoditySales.put(fileContents.get(1), commoditysaleAmount);
+				branchSales.put(fileContents.get(0), branchSaleAmount);
+				commoditySales.put(fileContents.get(1), commoditySaleAmount);
 			} catch(IOException e) {
 				System.out.println(UNKNOWN_ERROR);
 				return;
@@ -194,18 +185,17 @@ public class CalculateSales {
 	private static boolean readFile(
 		String path,
 		String fileName,
-		Map<String, String> Names,
-		Map<String, Long> Sales,
+		Map<String, String> names,
+		Map<String, Long> sales,
 		String regex,
-		String fileErrorMessage,
-		String formatErrorMessage
+		String error
 	) {
 		BufferedReader br = null;
 		try {
 			File file = new File(path, fileName);
 			//ファイルの存在チェック
 			if(!file.exists()) {
-				System.out.println(fileErrorMessage);
+				System.out.println(error + FILE_NOT_EXIST);
 				return false;
 			}
 			FileReader fr = new FileReader(file);
@@ -218,11 +208,11 @@ public class CalculateSales {
 				String[] items = line.split(",");
 				//支店定義ファイル及び商品定義ファイルのフォーマットチェック
 				if((items.length != 2) || (!items[0].matches(regex))){
-					System.out.println(formatErrorMessage);
+					System.out.println(error + FILE_INVALID_FORMAT);
 					return false;
 				}
-				Names.put(items[0], items[1]);
-				Sales.put(items[0], 0L);
+				names.put(items[0], items[1]);
+				sales.put(items[0], 0L);
 			}
 
 		} catch(IOException e) {
@@ -259,16 +249,16 @@ public class CalculateSales {
 	private static boolean writeFile(
 		String path,
 		String fileName,
-		Map<String, String> Names,
-		Map<String, Long> Sales
+		Map<String, String> names,
+		Map<String, Long> sales
 	) {
 		//(処理内容3-1)
 		BufferedWriter bw = null;
 		try {
 			File writefile = new File(path, fileName);
 			bw = new BufferedWriter(new FileWriter(writefile));
-			for (String key : Names.keySet()) {
-				bw.write(key + "," + Names.get(key) + "," + Sales.get(key));
+			for (String key : names.keySet()) {
+				bw.write(key + "," + names.get(key) + "," + sales.get(key));
 				bw.newLine();
 			}
 
